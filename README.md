@@ -5,3 +5,9 @@ Implementation de differents algorithmes et structures de donnees vues en mp2i e
 g++ -o <prog_name> <prog_name.cpp> -Wall -Werror -std=c++20 -O2
 ```
 
+## Things not yet implemented
+
+- chapter 1 log base p
+- chapter 5 simple BST
+- chapter 5 RB tree
+
