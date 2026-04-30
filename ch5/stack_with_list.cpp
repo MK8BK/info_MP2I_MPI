@@ -4,22 +4,22 @@
 #include <stdexcept>
 using namespace std;
 
-typedef struct pile{
+typedef struct stack{
   int data;
-  struct pile* pred;
-} Pile;
+  struct stack* pred;
+} Stack;
 
-void push(Pile **p, int i){
-  Pile* newP{new Pile};
+void push(Stack **p, int i){
+  Stack* newP{new Stack};
   newP->data = i;
   newP->pred = *p;
   *p = newP;
 }
 
-int pop(Pile **p){
+int pop(Stack **p){
   if(p==nullptr)
     throw runtime_error("[Can't pop from empty stack]\n");
-  Pile *t{(*p)->pred};
+  Stack *t{(*p)->pred};
   int x{(*p)->data};
   free(*p);
   *p = t;
@@ -28,7 +28,7 @@ int pop(Pile **p){
 
 int main(int argc, char** argv){
   vector<int> a{{1,2,3,4,5}};
-  Pile *p{nullptr};
+  Stack *p{nullptr};
   for(int i : a)
     push(&p, i);
   while(p!=nullptr)
