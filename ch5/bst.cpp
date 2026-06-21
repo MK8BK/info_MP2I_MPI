@@ -1,108 +1,186 @@
-#include <iostream>
+#include <cassert>
 #include <cstdlib>
-#include <vector>
-using namespace std;
+#include <limits>
 
-class BST{
-  typedef struct node {
-    int val;
-    struct node* parent;
-    struct node* left;
-    struct node* right;
-  } Node;
-  Node* root;
-  bool recContainsHelper(Node* n, int value){
-    if(!n) return false;
-    if(n->val==value) return true;
-    if(value>n->val) return recContainsHelper(n->right, value);
-    else return recContainsHelper(n->left, value);
-  }
-  template<typename F>
-  void inorderDoHelper(Node* n, F f) const {
-    if(!n) return;
-    inorderDoHelper(n->left, f);
-    f(n->val);
-    inorderDoHelper(n->right, f);
-  }
-  template<typename F>
-  void postorderDoHelper(Node* n, F f) const {
-    if(!n) return;
-    postorderDoHelper(n->left, f);
-    postorderDoHelper(n->right, f);
-    f(n->val);
-  }
-  template<typename F>
-  void preorderDoHelper(Node* n, F f) const {
-    if(!n) return;
-    f(n->val);
-    preorderDoHelper(n->left, f);
-    preorderDoHelper(n->right, f);
-  }
-public:
-  BST():root(nullptr){}
-  bool recContains(int value){
-    return recContainsHelper(root, value);
-  }
-
-  template<typename F>
-  void inorderDo(F f) const {
-    inorderDoHelper(root, f);
-  }
-  template<typename F>
-  void postorderDo(F f) const {
-    postorderDoHelper(root, f);
-  }
-  template<typename F>
-  void preorderDo(F f) const {
-    preorderDoHelper(root, f);
-  }
-  bool iterContains(int value){
-    Node *x{root};
-    while(x && x->val!=value){
-      if(value<x->val)
-        x = x->left;
-      else
-        x = x->left;
-    }
-    return x!=nullptr;
-
-  }
-  void insert(int value){
-    Node *z{new Node(value, nullptr, nullptr, nullptr)};
-    Node *y{nullptr};
-    Node *x{root};
-    while(x){
-      y = x;
-      if(y->val == value) return;
-      if(value<x->val)
-        x = x->left;
-      else
-        x = x->right;
-    }
-    z->parent = y;
-    if(!y)
-      root = z;
-    else if(value < y->val)
-      y->left = z;
-    else
-      y->right = z;
-  }
+struct BstNode {
+  int data;
+  BstNode *left, *right;
+  BstNode(int value) : data(value), left(nullptr), right(nullptr) {}
 };
 
-int main(int argc, char** argv){
-  BST bst;
-  vector<int> a({5,7,3,2,4,6,8,1,9,10});
-  for(int x : a)
-    bst.insert(x);
-  for(int i{-5}; i<16; ++i)
-    cout << i << ' ' << bst.recContains(i) << '\n';
-  auto print = [](const int n){cout << n << ' ';};
-  bst.inorderDo(print);
-  cout << endl;
-  bst.preorderDo(print);
-  cout << endl;
-  bst.postorderDo(print);
-  cout << endl;
+using Bst = BstNode *;
 
-  return EXIT_SUCCESS;
+// Insert
+void bstInsert(Bst &bst, int value) {
+  if (!bst) {
+    BstNode *newNode{new BstNode(value)};
+    bst = newNode;
+    return;
+  }
+  BstNode *parent{nullptr};
+  BstNode *current{bst};
+  while (current) {
+    parent = current;
+    if (current->data > value)
+      current = current->left;
+    else if (current->data < value)
+      current = current->right;
+    else // nothing to do, value already present
+      return;
+  }
+  BstNode *newNode{new BstNode(value)};
+  if (parent->data > value)
+    parent->left = newNode;
+  else
+    parent->right = newNode;
+}
+
+// Search
+BstNode* bstSearch(const Bst bst, int value){
+    BstNode* current{bst};
+    while(current){
+        if(current->data > value){
+            current = current->left;
+        }else if(current->data < value){
+            current = current->right;
+        }else{
+            return current;
+        }
+    }
+    return nullptr;
+}
+
+// Delete
+void bstDelete(Bst& bst, int value){
+    if(!bst) return;
+    // search for node and its parent
+    BstNode* current{bst};
+    BstNode* parent{nullptr};
+    while(current){
+        if(current->data > value){
+            parent = current;
+            current = current->left;
+        }else if(current->data < value){
+            parent = current;
+            current = current->right;
+        }else{
+            break;
+        }
+    }
+    if(!current) return; // not found
+    if(!current->right && !current->left){
+        if(!parent){
+            bst = nullptr;
+            delete current;
+            return;
+        }
+        if(parent->data>value) parent->left = nullptr;
+        else parent->right = nullptr;
+        delete current;
+        return;
+    }
+    if(!current->right){
+        if(!parent){
+            bst = current->left;
+            delete current;
+            return;
+        }
+        if(parent->data>value) parent->left = current->left;
+        else parent->right = current->left;
+        delete current;
+        return;
+    }
+    if(!current->left){
+        if(!parent){
+            bst = current->right;
+            delete current;
+            return;
+        }
+        if(parent->data>value) parent->left = current->right;
+        else parent->right = current->right;
+        delete current;
+        return;
+    }
+    // else both are present
+    // get smallest from right subtree, and its parent
+    BstNode* smallestRightParent{current};
+    BstNode* smallestRight{current->right};
+    while(smallestRight->left){
+        smallestRightParent = smallestRight;
+        smallestRight = smallestRight->left;
+    }
+
+    current->data = smallestRight->data;
+    if(current==smallestRightParent)
+        smallestRightParent->right = smallestRight->right;
+    else
+        smallestRightParent->left = smallestRight->right;
+    delete smallestRight;
+    return;
+}
+
+// Find Minimum
+int getMinimum(const Bst& bst){
+    Bst pbst{bst};
+    while(pbst && pbst->left){
+        pbst = pbst->left;
+    }
+    if(pbst)
+        return pbst->data;
+    else
+        return std::numeric_limits<int>::max();
+}
+
+
+// Find Maximum
+int getMaximum(const Bst& bst){
+    Bst pbst{bst};
+    while(pbst && pbst->right){
+        pbst = pbst->right;
+    }
+    if(pbst)
+        return pbst->data;
+    else
+        return std::numeric_limits<int>::min();
+}
+
+// Find Successor
+// Find Predecessor
+// Inorder Traversal
+// Preorder Traversal
+// Postorder Traversal
+// Level-order Traversal
+// Height Calculation
+// Validate BST
+// Find Parent
+// Find Depth
+// Find Lowest Common Ancestor (LCA)
+// Count Nodes
+// Count Leaf Nodes
+// Count Internal Nodes
+// Check Empty
+// Clear Tree
+// Mirror/Invert Tree
+// Balance Check
+// BST to Sorted Array
+// Sorted Array to BST
+// Range Query
+// K-th Smallest Element
+// K-th Largest Element
+// Tree Copy/Clone
+// Tree Equality Check
+// Diameter Calculation
+// Path Sum Queries
+
+int main(int argc, char **argv) {
+    Bst bst{};
+    assert(!bstSearch(bst, 1));
+    bstInsert(bst, 1);
+    assert(bstSearch(bst, 1));
+    bstDelete(bst, 1);
+    assert(!bstSearch(bst, 1));
+    bstInsert(bst, 3);
+    bstInsert(bst, 2);
+    assert(!bstSearch(bst, 1));
+    return EXIT_SUCCESS;
 }
