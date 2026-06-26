@@ -1,0 +1,16 @@
+vertex set cover with greedy approach
+- keep edges in a set
+- take one edge, add it's extremities to the cover
+- remove all edges in the set that have an extremity equal to ^
+- repeat while there are edges left
+--> |C| < 2|C*|  (algo d'appro de facteur d'appro 2)
+
+2-partition problem (find partition of size 2 with equal sums)
+--> min max_I (sigma I, sigma I^c)
+--> write it as a 2 machine scheduling problem and then
+      Heuristic 1 - add task to least full machine
+      Heuristic 2 - order the tasks first, then ^
+
+Given tasks with deadlines and durations and 1 processor, 
+  order tasks to minimize max delay
+  --> use earliest deadline time to order tasks
