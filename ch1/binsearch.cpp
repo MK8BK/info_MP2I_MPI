@@ -3,26 +3,23 @@
 #include <cstdlib>
 using namespace std;
 
-template<typename It, typename V>
-bool binsearch_v1(It start, It end, V query)
-requires std::is_same_v<typename It::value_type, V>
-{
-  if(!(end-start)) return false;
-  It mid;
-  while(start<end){
-    mid = start + (end-start)/2;
-    if(*mid>query)
+template<std::random_access_iterator It, typename V>
+bool binsearch_v1(It start, It end, const V& query){
+  while(start!=end){
+    It mid{start + (end-start)/2};
+    if(*mid<query)
+      start = mid+1;
+    else if(*mid>query)
       end = mid;
     else
-      start = mid+1;
+      return true;
   }
-  return *mid==query;
+  return false;
 }
 
-template<typename It, typename V>
-bool binsearch_v2(It start, It end, V query)
-requires std::is_same_v<typename It::value_type, V>
-{
+//requires std::is_same_v<typename It::value_type, V>
+template<std::random_access_iterator It, typename V>
+bool binsearch_v2(It start, It end, const V& query){
   auto n{end-start};
   if(!n) return false;
   decltype(n) offset{};
@@ -41,7 +38,7 @@ int main(int argc, char* argv[]){
   int q;
   cout << "Enter query number: ";
   while(cin >> q){
-    if(binsearch_v2(a.begin(), a.end(), q))
+    if(binsearch_v1(a.begin(), a.end(), q))
       cout << q << " found in array" << endl;
     else
       cout << q << " not found in array" << endl;
